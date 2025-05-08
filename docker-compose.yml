@@ -1,0 +1,14 @@
+version: '3'
+services:
+  db:
+    image: postgres:14.3
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: nestdb
+      POSTGRES_USER: nestuser
+      POSTGRES_PASSWORD: nestpass
+    volumes:
+      - ./postgres-new:/var/lib/postgresql/data
+    container_name: postgres_nest
