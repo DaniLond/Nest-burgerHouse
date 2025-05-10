@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { initialData } from './data/seed-data';
+import { initialData } from './data/seed-user-data';
 import { UserService } from '../../user/user.service';
 import { User } from '../../user/entities/user.entity';
 
@@ -21,10 +21,8 @@ export class UserSeedService {
     for (const seedUser of seedUsers) {
       try {
         
-        // Pass the correctly typed DTO to the service
         const result = await this.userService.create(seedUser);
         
-        // Make sure result exists before accessing its properties
         if (result && result.user) {
           insertPromises.push(Promise.resolve(result.user));
           this.logger.log(`User ${seedUser.email} created successfully`);

@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
-import { SeedModule } from './seed/users/seed.module';
+import { SeedModule } from './seed/seed.module';
+import { ProductModule } from './product/product.module';
+import { CommonsModule } from './commons/commons.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { SeedModule } from './seed/users/seed.module';
     }),
     UserModule,
     SeedModule,
+    ProductModule,
+    CommonsModule,
   ],
   controllers: [],
   providers: [],
