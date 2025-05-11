@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { SeedModule } from './seed/seed.module';
 import { ProductModule } from './product/product.module';
 import { CommonsModule } from './commons/commons.module';
+import { ToppingModule } from './topping/topping.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CommonsModule } from './commons/commons.module';
     SeedModule,
     ProductModule,
     CommonsModule,
+    ToppingModule,
   ],
   controllers: [],
   providers: [],
