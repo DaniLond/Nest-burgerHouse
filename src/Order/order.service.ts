@@ -18,6 +18,21 @@ import { OrderState } from './enums/valid-state.enums';
 
 @Injectable()
 export class OrderService {
+
+async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
+  const query = this.orderRepository.createQueryBuilder('order')
+    .leftJoinAndSelect('order.products', 'products')
+    .where('order.date BETWEEN :startDate AND :endDate', {
+      startDate,
+      endDate,
+    });
+
+  if (states && states.length > 0) {
+    query.andWhere('order.state IN (:...states)', { states });
+  }
+
+  return query.getMany();
+}
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,

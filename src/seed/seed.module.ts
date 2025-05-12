@@ -11,10 +11,13 @@ import { ToppingSeedController } from './toppings/topping-seed.controller';
 import { OrderSeedController } from './orders/order-seed.controller';
 import { OrderSeedService } from './orders/order-seed.service';
 import { OrderModule } from 'src/Order/order.module';
+import { ReportController } from 'src/report/report.controller';
+import { ReportService } from 'src/report/report.service';
+import { ReportModule } from 'src/report/report.module';
 
 @Module({
-  controllers: [UserSeedController, ProductSeedController, ToppingSeedController,OrderSeedController],
-  providers: [UserSeedService, ProductSeedService, ToppingSeedService, OrderSeedService],
-  imports: [UserModule, ProductModule, ToppingModule,OrderModule],
+  controllers: [UserSeedController, ProductSeedController, ToppingSeedController,OrderSeedController,ReportController],
+  providers: [UserSeedService, ProductSeedService, ToppingSeedService, OrderSeedService, ReportService],
+  imports: [UserModule, ProductModule, ToppingModule,OrderModule,ReportModule ],
 })
 export class SeedModule {}

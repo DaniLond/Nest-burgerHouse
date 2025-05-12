@@ -7,6 +7,8 @@ import { ProductModule } from './product/product.module';
 import { CommonsModule } from './commons/commons.module';
 import { ToppingModule } from './topping/topping.module';
 import { OrderModule } from './Order/order.module';
+import { ReportModule } from './report/report.module';
+
 
 
 
@@ -29,6 +31,7 @@ import { OrderModule } from './Order/order.module';
     CommonsModule,
     ToppingModule,
     OrderModule,
+    ReportModule,
 
   ],
   controllers: [],
