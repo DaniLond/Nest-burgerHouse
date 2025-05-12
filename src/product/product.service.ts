@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+  import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
@@ -8,6 +8,7 @@ import { PaginationDto } from '../commons/dto/pagination.dto';
 
 @Injectable()
 export class ProductService {
+  
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -37,6 +38,16 @@ export class ProductService {
     
     if (!product) {
       throw new NotFoundException(`Product with name ${name} not found`);
+    }
+    
+    return product;
+  }
+
+    async findOneById(id: string){
+    const product = await this.productRepository.findOneBy({ id, isActive: true });
+    
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
     
     return product;

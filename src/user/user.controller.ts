@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UnauthorizedException, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UserService } from './user.service';
@@ -9,6 +9,7 @@ import { User } from './entities/user.entity';
 import { Auth } from './decorators/auth.decorator';
 import { ValidRoles } from './enums/valid-roles.enum';
 import { GetUser } from './decorators/get-user.decorator';
+import { PaginationDto } from '../commons/dto/pagination.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -37,8 +38,8 @@ export class UserController {
   @ApiOperation({ summary: 'Get all users (admin only)' })
   @ApiResponse({ status: 200, description: 'List of all users', type: [User] })
   @ApiResponse({ status: 401, description: 'Unauthorized to perform this operation' })
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.userService.findAll(paginationDto);
   }
 
   @Get('profile')
@@ -73,25 +74,24 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 401, description: 'Not authorized to perform this operation' })
   async update(
-  @Param('email') email: string,
-  @Body() updateUserDto: UpdateUserDto,
-  @GetUser() user: any
+    @Param('email') email: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @GetUser() user: User
   ) {
-
-  if (!user.roles.includes('admin') && user.email !== email) {
+    if (!user.roles.includes('admin') && user.email !== email) {
       throw new UnauthorizedException('No puedes editar a otros usuarios');
-  }
+    }
 
-  if (!user.roles.includes('admin')) {
+    if (!user.roles.includes('admin')) {
       delete updateUserDto.roles;
       delete updateUserDto.isActive;
-  }
+    }
 
-  if (user.email !== email) {
-    delete updateUserDto.password;
-  }
+    if (user.email !== email) {
+      delete updateUserDto.password;
+    }
 
-  return this.userService.update(email, updateUserDto);
+    return this.userService.update(email, updateUserDto);
   }
 
   @Delete(':email')

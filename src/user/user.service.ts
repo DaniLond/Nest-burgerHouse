@@ -10,9 +10,11 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { JwtPayload } from './interfaces/jwt.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { isUUID } from 'class-validator';
+import { PaginationDto } from 'src/commons/dto/pagination.dto';
 
 @Injectable()
 export class UserService {
+ 
   private logger = new Logger('UserService');
 
   constructor(
@@ -64,8 +66,16 @@ export class UserService {
     };
   }
 
-  async findAll() {
-    return await this.userRepository.find();
+    async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    
+    const users = await this.userRepository.find({
+      take: limit,
+      skip: offset,
+      select: ['id', 'email', 'fullName', 'isActive', 'roles'],
+    });
+    
+    return users;
   }
 
   async findOne(term: string) {

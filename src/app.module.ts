@@ -6,6 +6,9 @@ import { SeedModule } from './seed/seed.module';
 import { ProductModule } from './product/product.module';
 import { CommonsModule } from './commons/commons.module';
 import { ToppingModule } from './topping/topping.module';
+import { OrderModule } from './Order/order.module';
+
+
 
 @Module({
   imports: [
@@ -25,6 +28,8 @@ import { ToppingModule } from './topping/topping.module';
     ProductModule,
     CommonsModule,
     ToppingModule,
+    OrderModule,
+
   ],
   controllers: [],
   providers: [],
