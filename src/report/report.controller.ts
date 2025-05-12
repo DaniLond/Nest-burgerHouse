@@ -25,7 +25,7 @@ enum TimeGroupBy {
 
 @ApiTags('Reports')
 @Controller('reports')
-@Auth(ValidRoles.admin) 
+@Auth(ValidRoles.admin) // Only admins can access reports
 @ApiBearerAuth('JWT-auth')
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}

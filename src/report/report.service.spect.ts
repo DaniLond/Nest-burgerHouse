@@ -144,6 +144,7 @@ describe('ReportService', () => {
       expect(result.topProducts[0].id).toBe(mockProduct1.id); 
       expect(result.topProducts[0].count).toBe(2);
       expect(result.topProducts[1].id).toBe(mockProduct2.id); 
+      
       expect(result.topProducts[1].count).toBe(2);
     });
   });
