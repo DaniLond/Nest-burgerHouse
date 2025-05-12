@@ -193,7 +193,7 @@ describe('OrderService', () => {
     });
 
     it('should update an order when user is admin', async () => {
-      const adminUser = { ...mockUser, roles: [ValidRoles.admin] };
+      const adminUser = { ...mockUser, roles: [ValidRoles.admin, ValidRoles.delivery] };
       mockOrder.userId = 'different-user-id';
       
       const result = await service.update(mockOrder.id, updateDto, adminUser as User);
@@ -224,7 +224,7 @@ describe('OrderService', () => {
 
   describe('remove', () => {
     it('should cancel an order by setting state to Cancelled', async () => {
-      const result = await service.remove(mockOrder.id);
+      const result = await service.remove(mockOrder.id, mockUser);
       
       expect(orderRepository.update).toHaveBeenCalledWith(mockOrder.id, { 
         state: OrderState.Cancelled 

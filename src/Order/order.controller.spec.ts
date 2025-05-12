@@ -84,17 +84,25 @@ describe('OrderController', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return a single order', async () => {
-      const result = await controller.findOne('order-uuid');
-      expect(mockOrderService.findOne).toHaveBeenCalledWith('order-uuid');
-      expect(result).toEqual(expect.objectContaining({
-        id: 'order-uuid',
-        ...mockCreateOrderDto,
-      }));
-    });
-  });
+describe('findOne', () => {
+  it('should return a single order', async () => {
 
+    const mockUser = {
+      id: 'user-uuid',
+      roles: ['customer'],
+    };
+
+
+    const result = await controller.findOne('order-uuid', mockUser as User);
+    
+    expect(mockOrderService.findOne).toHaveBeenCalledWith('order-uuid', mockUser);
+    
+    expect(result).toEqual(expect.objectContaining({
+      id: 'order-uuid',
+      ...mockCreateOrderDto,
+    }));
+  });
+});
   describe('update', () => {
     it('should update an order', async () => {
       const result = await controller.update('order-uuid', mockUpdateOrderDto, mockUser);
@@ -108,7 +116,7 @@ describe('OrderController', () => {
 
   describe('remove', () => {
     it('should cancel an order', async () => {
-      const result = await controller.remove('order-uuid');
+      const result = await controller.remove('order-uuid', mockUser);
       expect(mockOrderService.remove).toHaveBeenCalledWith('order-uuid');
       expect(result).toEqual({ message: 'Order cancelled' });
     });

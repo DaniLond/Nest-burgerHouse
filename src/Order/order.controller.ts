@@ -51,7 +51,7 @@ export class OrderController {
   }
 
   @Get()
-  @Auth(ValidRoles.admin)
+  @Auth(ValidRoles.admin, ValidRoles.delivery)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all orders' })
   @ApiResponse({
@@ -64,7 +64,7 @@ export class OrderController {
   }
 
   @Get('user')
-  @Auth()
+  @Auth(ValidRoles.customer, ValidRoles.admin)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get orders by current user' })
   @ApiResponse({
@@ -80,7 +80,7 @@ export class OrderController {
   }
 
   @Get(':id')
-  @Auth()
+  @Auth(ValidRoles.admin, ValidRoles.customer)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiParam({ name: 'id', description: 'ID of the order to search for' })
@@ -90,8 +90,8 @@ export class OrderController {
     type: Order,
   })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.orderService.findOne(id);
+  findOne(@Param('id', ParseUUIDPipe) id: string,  @GetUser() user: User) {
+    return this.orderService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -115,7 +115,7 @@ export class OrderController {
   }
 
   @Delete(':id')
-  @Auth(ValidRoles.admin)
+  @Auth()
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cancel an order' })
   @ApiParam({ name: 'id', description: 'ID of the order to cancel' })
@@ -124,7 +124,7 @@ export class OrderController {
     description: 'Order has been successfully cancelled',
   })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.orderService.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
+    return this.orderService.remove(id, user);
   }
 }

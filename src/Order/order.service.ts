@@ -26,6 +26,10 @@ export class OrderService {
   ) {}
 
   async create(createOrderDto: CreateOrderDto, user: User) {
+
+    if (user.roles.includes(ValidRoles.admin) || user.roles.includes(ValidRoles.delivery)) {
+      throw new ForbiddenException('Only regular users can create orders');
+    }
     const { productIds, state = OrderState.Pending, ...orderData } = createOrderDto;
     
     const queryRunner = this.dataSource.createQueryRunner();
@@ -97,7 +101,7 @@ export class OrderService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user?: User) {
     const order = await this.orderRepository.findOne({
       where: { id },
       relations: ['user', 'products'],
@@ -106,36 +110,75 @@ export class OrderService {
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
+
+    if (user && order.userId !== user.id && 
+        !user.roles.includes(ValidRoles.admin) && 
+        !user.roles.includes(ValidRoles.delivery)) {
+      throw new ForbiddenException('You are not authorized to view this order');
+    }
     
     return order;
   }
 
   async update(id: string, updateOrderDto: UpdateOrderDto, user: User) {
-    const order = await this.findOne(id);
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['user', 'products'],
+    });
     
-    const isAdmin = user.roles?.some(role => role === ValidRoles.admin);
-    if (order.userId !== user.id && !isAdmin) {
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    const isAdmin = user.roles.includes(ValidRoles.admin);
+    const isDelivery = user.roles.includes(ValidRoles.delivery);
+    const isOwner = order.userId === user.id;
+    
+    
+    if (isDelivery && !isAdmin) {
+      
+      if (Object.keys(updateOrderDto).length > 1 || !updateOrderDto.state) {
+        throw new ForbiddenException('Delivery users can only update the order state');
+      }
+    } 
+    
+    else if (isAdmin) {
+      
+    }
+    else if (!isAdmin && !isOwner) {
       throw new ForbiddenException('You are not authorized to update this order');
     }
     
     const { productIds, ...updateData } = updateOrderDto;
+    
+    
+    if (!isAdmin && !isDelivery && 
+        (updateData.state === OrderState.Delivered || 
+         updateData.state === OrderState.OnTheWay)) {
+      throw new ForbiddenException('Regular users cannot set order state to Delivered or OnTheWay');
+    }
     
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     
     try {
+   
       if (Object.keys(updateData).length > 0) {
         await this.orderRepository.update(id, updateData);
       }
       
       if (productIds && productIds.length > 0) {
+        if (!isAdmin && !isOwner) {
+          throw new ForbiddenException('Only the order owner or admin can update products');
+        }
+        
         await queryRunner.manager
           .createQueryBuilder()
           .delete()
           .from('order_product')
           .where('orderId = :orderId', { orderId: id })
           .execute();
+        
         await queryRunner.manager
           .createQueryBuilder()
           .insert()
@@ -147,10 +190,10 @@ export class OrderService {
             }))
           )
           .execute();
-    
+        
         let calculatedTotal = 0;
         for (const productId of productIds) {
-          const product = await this.productService.findOneById(productId);
+          const product = await this.productService.findOne(productId);
           calculatedTotal += parseFloat(product.price.toString());
         }
         
@@ -159,7 +202,7 @@ export class OrderService {
       
       await queryRunner.commitTransaction();
       
-      return this.findOne(id);
+      return this.findOne(id, user);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.handleDBExceptions(error);
@@ -168,10 +211,29 @@ export class OrderService {
     }
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+ 
+   async remove(id: string, user: User) {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     
-  
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    
+    const isAdmin = user.roles.includes(ValidRoles.admin) || user.roles.includes(ValidRoles.delivery);
+    const isOwner = order.userId === user.id;
+    
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Only the order owner or admin can cancel this order');
+    }
+    
+    if (order.state === OrderState.OnTheWay || order.state === OrderState.Delivered) {
+      throw new BadRequestException(`Cannot cancel an order that is already ${order.state}`);
+    }
+    
+    // Set to cancelled state
     await this.orderRepository.update(id, { state: OrderState.Cancelled });
     
     return {
