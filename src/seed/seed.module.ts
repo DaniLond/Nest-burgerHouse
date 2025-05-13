@@ -8,10 +8,16 @@ import { ProductModule } from 'src/product/product.module';
 import { ToppingSeedService } from './toppings/topping-seed.service';
 import { ToppingModule } from 'src/topping/topping.module';
 import { ToppingSeedController } from './toppings/topping-seed.controller';
+import { OrderSeedController } from './orders/order-seed.controller';
+import { OrderSeedService } from './orders/order-seed.service';
+import { OrderModule } from 'src/Order/order.module';
+import { ReportController } from 'src/report/report.controller';
+import { ReportService } from 'src/report/report.service';
+import { ReportModule } from 'src/report/report.module';
 
 @Module({
-  controllers: [UserSeedController, ProductSeedController, ToppingSeedController],
-  providers: [UserSeedService, ProductSeedService, ToppingSeedService],
-  imports: [UserModule, ProductModule, ToppingModule],
+  controllers: [UserSeedController, ProductSeedController, ToppingSeedController,OrderSeedController,ReportController],
+  providers: [UserSeedService, ProductSeedService, ToppingSeedService, OrderSeedService, ReportService],
+  imports: [UserModule, ProductModule, ToppingModule,OrderModule,ReportModule ],
 })
 export class SeedModule {}
