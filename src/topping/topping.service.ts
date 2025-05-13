@@ -14,7 +14,7 @@ import { UpdateToppingDto } from './dto/update-topping.dto';
 import { CreateProductToppingDto } from './dto/create-product-topping.dto';
 import { PaginationDto } from 'src/commons/dto/pagination.dto';
 
-@Injectable()
+@Injectable()   
 export class ToppingService {
   constructor(
     @InjectRepository(Topping)
