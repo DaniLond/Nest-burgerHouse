@@ -5,8 +5,7 @@ import { ReportService } from './report.service';
 describe('ReportController', () => {
   let controller: ReportController;
   let mockReportService: Partial<ReportService>;
-
-
+  
   const mockSalesReport = {
     startDate: new Date('2023-05-01T00:00:00Z'),
     endDate: new Date('2023-05-01T23:59:59Z'),
