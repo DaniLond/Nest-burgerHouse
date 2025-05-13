@@ -13,6 +13,7 @@ import {
   UnauthorizedException,
   NotFoundException,
 } from '@nestjs/common';
+import { PaginationDto } from 'src/commons/dto/pagination.dto';
 
 describe('UserService', () => {
   let service: UserService;
@@ -203,7 +204,11 @@ describe('UserService', () => {
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
-      const result = await service.findAll();
+      const paginationDto: PaginationDto = {
+        limit: 10,
+        offset: 0,
+      };
+      const result = await service.findAll(paginationDto);
       expect(result).toEqual([mockUser]);
       expect(userRepository.find).toHaveBeenCalled();
     });

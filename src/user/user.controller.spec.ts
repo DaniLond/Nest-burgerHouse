@@ -9,6 +9,7 @@ import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
+import { PaginationDto } from 'src/commons/dto/pagination.dto';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -150,8 +151,13 @@ describe('UserController', () => {
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
-      const result = await controller.findAll();
+      const paginationDto: PaginationDto = {
+        limit: 10,
+        offset: 0,
+      };
+      const result = await controller.findAll(paginationDto);
 
+      expect(service.findAll).toHaveBeenCalledWith(paginationDto);
       expect(service.findAll).toHaveBeenCalled();
       expect(result).toEqual([mockUser, mockAdminUser]);
     });
