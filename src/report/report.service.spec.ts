@@ -98,7 +98,7 @@ describe('ReportService', () => {
         endDate,
         totalSales: 82.98, // Sum of totals for the 3 orders in the date range with valid states
         totalOrders: 3,
-        averageOrderValue: 27.66, // 82.98 / 3 = 27.66
+        averageOrderValue: 27.66, 
         orders: expect.any(Array),
       });
     });
@@ -140,9 +140,9 @@ describe('ReportService', () => {
       expect(result).toEqual({
         startDate: startOfDay,
         endDate: endOfDay,
-        totalSales: 67.48, // Sum of the two orders on May 1st
+        totalSales: 67.48, 
         totalOrders: 2,
-        averageOrderValue: 33.74, // 67.48 / 2 = 33.74
+        averageOrderValue: 33.74, 
         orders: expect.any(Array),
       });
     });
@@ -150,7 +150,7 @@ describe('ReportService', () => {
 
   describe('getWeeklySalesReport', () => {
     it('should return sales report for a specific week', async () => {
-      const date = new Date('2023-05-01T12:00:00Z'); // Monday of the week
+      const date = new Date('2023-05-01T12:00:00Z');
       
       const result = await service.getWeeklySalesReport(date);
       
@@ -170,7 +170,7 @@ describe('ReportService', () => {
 
   describe('getMonthlySalesReport', () => {
     it('should return sales report for a specific month', async () => {
-      const date = new Date('2023-05-15T12:00:00Z'); // Middle of the month
+      const date = new Date('2023-05-15T12:00:00Z'); 
       
       const result = await service.getMonthlySalesReport(date);
       
@@ -210,14 +210,14 @@ describe('ReportService', () => {
             name: mockProduct1.name,
             price: mockProduct1.price,
             count: 2,
-            totalRevenue: 51.98 // 25.99 * 2
+            totalRevenue: 51.98 
           },
           {
             id: mockProduct2.id,
             name: mockProduct2.name,
             price: mockProduct2.price,
             count: 2,
-            totalRevenue: 31.00 // 15.50 * 2
+            totalRevenue: 31.00 
           }
         ]
       });
@@ -331,13 +331,13 @@ describe('ReportService', () => {
 
     it('should return sales trends grouped by week', async () => {
       const startDate = new Date('2023-05-01T00:00:00Z');
-      const endDate = new Date('2023-05-14T23:59:59Z'); // Two weeks
+      const endDate = new Date('2023-05-14T23:59:59Z'); 
       
-      // Mock different week orders
+
       const weekTwoOrders = [
         {
           id: '123e4567-e89b-12d3-a456-426614174105',
-          date: new Date('2023-05-08T10:00:00Z'), // Second week of May
+          date: new Date('2023-05-08T10:00:00Z'), 
           total: 40.00,
           state: OrderState.Delivered,
           products: [mockProduct1, mockProduct2],
@@ -356,14 +356,14 @@ describe('ReportService', () => {
       const result = await service.getSalesTrends(startDate, endDate, 'week');
       
       expect(result.groupBy).toBe('week');
-      expect(result.trendData).toHaveLength(2); // Two weeks of data
+      expect(result.trendData).toHaveLength(2); 
     });
 
     it('should return sales trends grouped by month', async () => {
       const startDate = new Date('2023-04-01T00:00:00Z');
-      const endDate = new Date('2023-05-31T23:59:59Z'); // Two months
+      const endDate = new Date('2023-05-31T23:59:59Z');
       
-      // Mock different month orders
+      
       const aprilOrders = [
         {
           id: '123e4567-e89b-12d3-a456-426614174106',
@@ -386,7 +386,7 @@ describe('ReportService', () => {
       const result = await service.getSalesTrends(startDate, endDate, 'month');
       
       expect(result.groupBy).toBe('month');
-      expect(result.trendData).toHaveLength(2); // Two months of data
+      expect(result.trendData).toHaveLength(2); 
     });
   });
 });

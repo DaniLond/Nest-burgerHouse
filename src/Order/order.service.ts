@@ -42,8 +42,8 @@ async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
 
   async create(createOrderDto: CreateOrderDto, user: User) {
 
-    if (user.roles.includes(ValidRoles.admin) || user.roles.includes(ValidRoles.delivery)) {
-      throw new ForbiddenException('Only regular users can create orders');
+    if ( user.roles.includes(ValidRoles.delivery)) {
+      throw new ForbiddenException('Delivery users cannot create orders')
     }
     const { productIds, state = OrderState.Pending, ...orderData } = createOrderDto;
     
