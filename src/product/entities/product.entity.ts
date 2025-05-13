@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductCategories } from "../enums/valid-categories.enum";
-import { ProductTopping } from "src/topping/entities/product-topping.entity";
+import { ProductTopping } from "../../topping/entities/product-topping.entity";
 
 @Entity('products')
 export class Product {

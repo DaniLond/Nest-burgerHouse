@@ -4,7 +4,7 @@ import { ToppingController } from './topping.controller';
 import { ToppingService } from './topping.service';
 import { Topping } from './entities/topping.entity';
 import { ProductTopping } from './entities/product-topping.entity';
-import { Product } from 'src/product/entities/product.entity';
+import { Product } from '../product/entities/product.entity';
 import { PassportModule } from '@nestjs/passport';
 
 @Module({

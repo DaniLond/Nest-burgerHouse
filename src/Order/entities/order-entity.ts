@@ -9,8 +9,8 @@ import {
   JoinTable,
   CreateDateColumn
 } from "typeorm";
-import { User } from "src/user/entities/user.entity";
-import { Product } from "src/product/entities/product.entity";
+import { User } from "../../user/entities/user.entity";
+import { Product } from "../../product/entities/product.entity";
 import { OrderState } from "../enums/valid-state.enums";
 
 @Entity('orders')

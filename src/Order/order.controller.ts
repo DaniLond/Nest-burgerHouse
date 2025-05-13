@@ -21,10 +21,10 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PaginationDto } from '../commons/dto/pagination.dto';
 import { Order } from './entities/order-entity';
-import { Auth } from 'src/user/decorators/auth.decorator';
-import { ValidRoles } from 'src/user/enums/valid-roles.enum';
-import { GetUser } from 'src/user/decorators/get-user.decorator';
-import { User } from 'src/user/entities/user.entity';
+import { Auth } from '../user/decorators/auth.decorator';
+import { ValidRoles } from '../user/enums/valid-roles.enum';
+import { GetUser } from '../user/decorators/get-user.decorator';
+import { User } from '../user/entities/user.entity';
 import { OrderState } from './enums/valid-state.enums';
 
 @ApiTags('Orders')

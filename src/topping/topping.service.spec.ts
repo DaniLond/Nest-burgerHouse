@@ -10,7 +10,7 @@ import { UpdateToppingDto } from './dto/update-topping.dto';
 import { CreateProductToppingDto } from './dto/create-product-topping.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PaginationDto } from '../commons/dto/pagination.dto';
-import { ProductCategories } from 'src/product/enums/valid-categories.enum';
+import { ProductCategories } from '../product/enums/valid-categories.enum';
 
 describe('ToppingService', () => {
   let service: ToppingService;

@@ -10,10 +10,10 @@ import { Order } from './entities/order-entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PaginationDto } from '../commons/dto/pagination.dto';
-import { User } from 'src/user/entities/user.entity';
-import { ProductService } from 'src/product/product.service';
-import { ValidRoles } from 'src/user/enums/valid-roles.enum';
-import { Product } from 'src/product/entities/product.entity';
+import { User } from '../user/entities/user.entity';
+import { ProductService } from '../product/product.service';
+import { ValidRoles } from '../user/enums/valid-roles.enum';
+import { Product } from '../product/entities/product.entity';
 import { OrderState } from './enums/valid-state.enums';
 
 @Injectable()

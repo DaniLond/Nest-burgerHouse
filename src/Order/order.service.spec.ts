@@ -3,13 +3,13 @@ import { OrderService } from './order.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Order } from './entities/order-entity';
 import { DataSource, Repository } from 'typeorm';
-import { ProductService } from 'src/product/product.service';
+import { ProductService } from '../product/product.service';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { User } from 'src/user/entities/user.entity';
-import { Product } from 'src/product/entities/product.entity';
+import { User } from '../user/entities/user.entity';
+import { Product } from '../product/entities/product.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ValidRoles } from 'src/user/enums/valid-roles.enum';
+import { ValidRoles } from '../user/enums/valid-roles.enum';
 import { OrderState } from './enums/valid-state.enums';
 
 describe('OrderService', () => {

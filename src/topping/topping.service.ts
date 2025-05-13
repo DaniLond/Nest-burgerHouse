@@ -12,7 +12,7 @@ import { ProductTopping } from './entities/product-topping.entity';
 import { CreateToppingDto } from './dto/create-topping.dto';
 import { UpdateToppingDto } from './dto/update-topping.dto';
 import { CreateProductToppingDto } from './dto/create-product-topping.dto';
-import { PaginationDto } from 'src/commons/dto/pagination.dto';
+import { PaginationDto } from '../commons/dto/pagination.dto';
 
 @Injectable()   
 export class ToppingService {

@@ -20,8 +20,8 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../commons/dto/pagination.dto';
 import { Product } from './entities/product.entity';
-import { Auth } from 'src/user/decorators/auth.decorator';
-import { ValidRoles } from 'src/user/enums/valid-roles.enum';
+import { Auth } from '../user/decorators/auth.decorator';
+import { ValidRoles } from '../user/enums/valid-roles.enum';
 
 @ApiTags('Products')
 @Controller('products')

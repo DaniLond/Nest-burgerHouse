@@ -17,9 +17,9 @@ import { UpdateToppingDto } from './dto/update-topping.dto';
 import { CreateProductToppingDto } from './dto/create-product-topping.dto';
 import { Topping } from './entities/topping.entity';
 import { ProductTopping } from './entities/product-topping.entity';
-import { PaginationDto } from 'src/commons/dto/pagination.dto';
-import { Auth } from 'src/user/decorators/auth.decorator';
-import { ValidRoles } from 'src/user/enums/valid-roles.enum';
+import { PaginationDto } from '../commons/dto/pagination.dto';
+import { Auth } from '../user/decorators/auth.decorator';
+import { ValidRoles } from '../user/enums/valid-roles.enum';
 
 @ApiTags('Toppings')
 @Controller('toppings')
