@@ -45,16 +45,6 @@ Finalmente ya podras correr las pruebas
  npm run test:cov  
 ```
 
-5. Correr los test e2e
-   
-  Primero instalar 
-  ```sh
-  
-```
-Finalmente ya podras correr las pruebas
-```sh
-
-```
 
 
 # Endpoints de la API
