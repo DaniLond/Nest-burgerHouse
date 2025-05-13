@@ -130,6 +130,13 @@ describe('ToppingService', () => {
       expect(result).toEqual(mockTopping);
     });
 
+    it('should throw generic BadRequestException on unexpected DB error during create', async () => {
+  jest.spyOn(toppingRepository, 'save').mockRejectedValueOnce(new Error('Unexpected error'));
+
+  await expect(service.create(mockCreateToppingDto)).rejects.toThrow(BadRequestException);
+});
+
+
     it('should throw BadRequestException when topping creation fails', async () => {
       jest.spyOn(toppingRepository, 'save').mockRejectedValueOnce({
         code: '23505',
@@ -201,6 +208,18 @@ describe('ToppingService', () => {
         service.update('Nonexistent Topping', mockUpdateToppingDto),
       ).rejects.toThrow(NotFoundException);
     });
+
+    it('should throw BadRequestException if update fails with DB error', async () => {
+  jest.spyOn(toppingRepository, 'update').mockRejectedValueOnce({
+    code: '23505',
+    detail: 'Duplicate key',
+  });
+
+  await expect(
+    service.update('Extra Cheese', mockUpdateToppingDto),
+  ).rejects.toThrow(BadRequestException);
+});
+
   });
 
   describe('remove', () => {
@@ -231,7 +250,7 @@ describe('ToppingService', () => {
 
   describe('addToppingToProduct', () => {
     it('should add a topping to a product', async () => {
-      // Configuramos el mock para que no encuentre una relación existente
+      
       jest
         .spyOn(productToppingRepository, 'findOne')
         .mockResolvedValueOnce(null);
@@ -260,6 +279,16 @@ describe('ToppingService', () => {
       expect(productToppingRepository.save).toHaveBeenCalled();
       expect(result).toEqual(mockProductTopping);
     });
+
+    it('should throw generic BadRequestException if DB error during productTopping save', async () => {
+  jest.spyOn(productToppingRepository, 'findOne').mockResolvedValueOnce(null);
+  jest.spyOn(productToppingRepository, 'save').mockRejectedValueOnce(new Error('Unexpected error'));
+
+  await expect(
+    service.addToppingToProduct(mockCreateProductToppingDto),
+  ).rejects.toThrow(BadRequestException);
+});
+
 
     it('should throw NotFoundException if product not found', async () => {
       jest.spyOn(productRepository, 'findOneBy').mockResolvedValueOnce(null);

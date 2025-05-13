@@ -7,11 +7,12 @@ import { User } from 'src/user/entities/user.entity';
 import { ValidRoles } from 'src/user/enums/valid-roles.enum';
 import { OrderState } from './enums/valid-state.enums';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
 
 describe('OrderController', () => {
   let controller: OrderController;
   let mockOrderService: Partial<OrderService>;
-  
+
   const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'test@example.com',
@@ -61,6 +62,7 @@ describe('OrderController', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [PassportModule.register({ defaultStrategy: 'jwt' })],
       controllers: [OrderController],
       providers: [
         {

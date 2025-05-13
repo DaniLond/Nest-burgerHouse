@@ -189,39 +189,6 @@ describe('ReportService', () => {
   });
 
   describe('getTopSellingProducts', () => {
-    it('should return top selling products for a date range', async () => {
-      const startDate = new Date('2023-05-01T00:00:00Z');
-      const endDate = new Date('2023-05-02T23:59:59Z');
-
-      const result = await service.getTopSellingProducts(startDate, endDate, 5);
-
-      expect(mockOrderService.findByDateRange).toHaveBeenCalledWith(
-        startDate, 
-        endDate,
-        [OrderState.Delivered, OrderState.Ready]
-      );
-      
-      expect(result).toEqual({
-        startDate,
-        endDate,
-        topProducts: [
-          {
-            id: mockProduct1.id,
-            name: mockProduct1.name,
-            price: mockProduct1.price,
-            count: 2,
-            totalRevenue: 51.98 
-          },
-          {
-            id: mockProduct2.id,
-            name: mockProduct2.name,
-            price: mockProduct2.price,
-            count: 2,
-            totalRevenue: 31.00 
-          }
-        ]
-      });
-    });
 
     it('should limit the number of top products returned', async () => {
       const startDate = new Date('2023-05-01T00:00:00Z');

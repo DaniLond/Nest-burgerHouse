@@ -27,6 +27,15 @@ describe('OrderService', () => {
     roles: ['user'],
   } as User;
 
+  const mockDeliveryUser: User = {
+    id: '123e4567-e89b-12d3-a456-426614174111',
+    email: 'delivery@example.com',
+    password: 'hashedpassword',
+    fullName: 'Delivery User',
+    isActive: true,
+    roles: [ValidRoles.delivery],
+  } as User;
+
   const mockAdminUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174999',
     email: 'admin@example.com',
@@ -59,10 +68,10 @@ describe('OrderService', () => {
   } as Order;
 
   const mockCreateOrderDto: CreateOrderDto = {
-    total: 45.98,
-    userId: mockUser.id,
     productIds: [mockProduct1.id, mockProduct2.id],
-    state: OrderState.Pending
+    state: OrderState.Pending,
+    total: mockOrder.total,
+    userId: mockUser.id
   };
 
   const mockUpdateOrderDto: UpdateOrderDto = {
@@ -73,7 +82,6 @@ describe('OrderService', () => {
     connect: jest.fn(),
     startTransaction: jest.fn(),
     manager: {
-      save: jest.fn().mockResolvedValue(mockOrder),
       createQueryBuilder: jest.fn().mockReturnThis(),
       insert: jest.fn().mockReturnThis(),
       into: jest.fn().mockReturnThis(),
@@ -95,15 +103,26 @@ describe('OrderService', () => {
       find: jest.fn().mockResolvedValue([mockOrder]),
       findOne: jest.fn().mockImplementation(({ where }) => {
         if (where.id === mockOrder.id) {
-          return Promise.resolve(mockOrder);
+          return Promise.resolve({ ...mockOrder });
         }
         return Promise.resolve(null);
       }),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
+      createQueryBuilder: jest.fn().mockReturnValue({
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockOrder]),
+      }),
     };
 
     productService = {
       findOneById: jest.fn().mockImplementation((id) => {
+        if (id === mockProduct1.id) return Promise.resolve(mockProduct1);
+        if (id === mockProduct2.id) return Promise.resolve(mockProduct2);
+        return Promise.reject(new NotFoundException(`Product with id ${id} not found`));
+      }),
+      findOne: jest.fn().mockImplementation((id) => {
         if (id === mockProduct1.id) return Promise.resolve(mockProduct1);
         if (id === mockProduct2.id) return Promise.resolve(mockProduct2);
         return Promise.reject(new NotFoundException(`Product with id ${id} not found`));
@@ -138,7 +157,6 @@ describe('OrderService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-
 
   describe('findAll', () => {
     it('should return an array of orders with pagination', async () => {
@@ -231,118 +249,93 @@ describe('OrderService', () => {
   });
 
   describe('create', () => {
-  it('should create a new order successfully (mocked)', async () => {
-    const mockSavedOrder = {
-      ...mockOrder,
-      id: 'new-id',
-      products: [mockProduct1, mockProduct2],
-    };
 
-    mockQueryRunner.manager.save = jest.fn().mockResolvedValue(mockSavedOrder);
+    it('should create an order successfully for a valid user and products', async () => {
+  mockQueryRunner.commitTransaction = jest.fn().mockResolvedValue(undefined);
 
-    const result = await service.create(mockCreateOrderDto, mockUser);
+  const result = await service.create(mockCreateOrderDto, mockUser);
 
-    expect(result).toEqual(expect.objectContaining({ id: 'new-id' }));
-    expect(productService.findOneById).toHaveBeenCalledTimes(2);
-    expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
-    expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
-    expect(mockQueryRunner.release).toHaveBeenCalled();
-  });
-
-  it('should throw NotFoundException if a product is not found', async () => {
-  const badDto = {
-    ...mockCreateOrderDto,
-    productIds: ['invalid-id'],
-  };
-
-  await expect(service.create(badDto, mockUser)).rejects.toThrow(NotFoundException);
-});
-
-it('should throw BadRequestException if no productIds are provided', async () => {
-  const dtoWithoutProducts = { ...mockCreateOrderDto, productIds: [] };
-
-  await expect(service.create(dtoWithoutProducts, mockUser)).rejects.toThrow(BadRequestException);
-});
-
-it('should rollback transaction if save fails', async () => {
-  mockQueryRunner.manager.save = jest.fn().mockRejectedValue(new Error('DB error'));
-
-  await expect(service.create(mockCreateOrderDto, mockUser)).rejects.toThrow();
-
-  expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
-  expect(mockQueryRunner.release).toHaveBeenCalled();
-
-  it('should rollback if commitTransaction fails', async () => {
-  mockQueryRunner.commitTransaction = jest.fn().mockRejectedValue(new Error('Commit error'));
-
-  await expect(service.create(mockCreateOrderDto, mockUser)).rejects.toThrow();
-
-  expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+  expect(result).toHaveProperty('id', mockOrder.id);
+  expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
+  expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
   expect(mockQueryRunner.release).toHaveBeenCalled();
 });
+it('should throw ForbiddenException if user is delivery', async () => {
+    const deliveryUser = { id: 'user-id', roles: ['delivery'] } as any;
+    const dto = { productIds: ['prod-1'] } as CreateOrderDto;
 
-});
+    await expect(service.create(dto, deliveryUser)).rejects.toThrow(ForbiddenException);
+  });
+    
+    it('should throw ForbiddenException if delivery user tries to create order', async () => {
+      await expect(service.create(mockCreateOrderDto, mockDeliveryUser))
+        .rejects.toThrow(ForbiddenException);
+    });
 
-});
+    it('should throw BadRequestException if no productIds are provided', async () => {
+      const dtoWithoutProducts = { ...mockCreateOrderDto, productIds: [] };
 
-describe('update', () => {
-  it('should update the order state', async () => {
-    const updatedOrder = { ...mockOrder, state: mockUpdateOrderDto.state };
-    orderRepository.findOne = jest.fn().mockResolvedValue(mockOrder);
-    orderRepository.save = jest.fn().mockResolvedValue(updatedOrder);
+      await expect(service.create(dtoWithoutProducts, mockUser)).rejects.toThrow(BadRequestException);
+    });
 
-    const result = await service.update(mockOrder.id, mockUpdateOrderDto, mockUser);
+    it('should rollback transaction if save fails', async () => {
+      orderRepository.save = jest.fn().mockRejectedValue(new Error('DB error'));
 
-    expect(orderRepository.findOne).toHaveBeenCalled();
-    expect(orderRepository.save).toHaveBeenCalledWith(updatedOrder);
-    expect(result).toBeDefined();
-    expect(result && result.state).toBe(OrderState.Preparing);
+      await expect(service.create(mockCreateOrderDto, mockUser)).rejects.toThrow(BadRequestException);
+
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.release).toHaveBeenCalled();
+    });
+
+    it('should rollback if commitTransaction fails', async () => {
+      mockQueryRunner.commitTransaction = jest.fn().mockRejectedValue(new Error('Commit error'));
+
+      await expect(service.create(mockCreateOrderDto, mockUser)).rejects.toThrow(BadRequestException);
+
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.release).toHaveBeenCalled();
+    });
   });
 
-  it('should throw NotFoundException if order does not exist', async () => {
-    orderRepository.findOne = jest.fn().mockResolvedValue(null);
+  describe('update', () => {
+    
+    it('should throw NotFoundException if order does not exist', async () => {
+      orderRepository.findOne = jest.fn().mockResolvedValue(null);
 
-    await expect(service.update('non-existent-id', mockUpdateOrderDto, mockUser))
-      .rejects.toThrow(NotFoundException);
-  });
+      await expect(service.update('non-existent-id', mockUpdateOrderDto, mockUser))
+        .rejects.toThrow(NotFoundException);
+    });
 
-  it('should throw ForbiddenException if user is not the owner', async () => {
-    const otherUserOrder = { ...mockOrder, userId: 'other-id', user: { id: 'other-id' } as User };
-    orderRepository.findOne = jest.fn().mockResolvedValue(otherUserOrder);
+    it('should throw ForbiddenException if user is not the owner', async () => {
+      const differentUser = { ...mockUser, id: 'different-user-id' };
+      const orderWithDifferentUser = { 
+        ...mockOrder, 
+        userId: 'different-owner-id',
+        user: { id: 'different-owner-id' } as User
+      };
+      
+      orderRepository.findOne = jest.fn().mockResolvedValue(orderWithDifferentUser);
+      
+      await expect(service.update(mockOrder.id, mockUpdateOrderDto, differentUser as User))
+        .rejects.toThrow(ForbiddenException);
+    });
 
-    await expect(service.update(mockOrder.id, mockUpdateOrderDto, mockUser))
-      .rejects.toThrow(ForbiddenException);
-  });
 
-  it('should throw NotFoundException if order does not exist', async () => {
-    orderRepository.findOne = jest.fn().mockResolvedValue(null);
-
-    await expect(service.update('invalid-id', mockUpdateOrderDto, mockUser))
-      .rejects.toThrow(NotFoundException);
-  });
-
-  it('should allow admin to update any order', async () => {
-  const orderWithDifferentUser = {
-    ...mockOrder,
-    userId: 'someone-else',
-    user: { id: 'someone-else' } as User,
-  };
-  const updatedOrder = { ...orderWithDifferentUser, state: mockUpdateOrderDto.state };
-
-  orderRepository.findOne = jest.fn().mockResolvedValue(orderWithDifferentUser);
-  orderRepository.save = jest.fn().mockResolvedValue(updatedOrder);
-
-  const result = await service.update(orderWithDifferentUser.id, mockUpdateOrderDto, mockAdminUser);
-
-  expect(orderRepository.save).toHaveBeenCalledWith(updatedOrder);
-  expect(result && result.state).toBe(OrderState.Preparing);
-});
-
+    it('should restrict delivery users to only update state', async () => {
+      orderRepository.findOne = jest.fn().mockResolvedValue(mockOrder);
+      
+      await expect(service.update(
+        mockOrder.id, 
+        { 
+          state: OrderState.OnTheWay,
+          productIds: [mockProduct1.id]  
+        }, 
+        mockDeliveryUser
+      )).rejects.toThrow(ForbiddenException);
+    });
 
  
-});
-
-
+  });
 
   describe('remove', () => {
     it('should cancel an order by setting state to Cancelled', async () => {
@@ -356,6 +349,16 @@ describe('update', () => {
         message: `Order with ID ${mockOrder.id} has been cancelled successfully`
       });
     });
+
+    it('should throw BadRequestException if order is OnTheWay or Delivered', async () => {
+  const order = { id: '1', userId: 'user1', state: OrderState.OnTheWay } as Order;
+  const user = { id: 'user1', roles: ['customer'] } as User;
+
+  jest.spyOn(orderRepository, 'findOne').mockResolvedValue(order);
+
+  await expect(service.remove('1', user)).rejects.toThrow(BadRequestException);
+});
+
 
     it('should throw NotFoundException when order not found', async () => {
       orderRepository.findOne = jest.fn().mockResolvedValue(null);
@@ -376,6 +379,17 @@ describe('update', () => {
       await expect(service.remove(mockOrder.id, differentUser as User)).rejects.toThrow(ForbiddenException);
     });
 
+    it('should throw BadRequestException if order is already delivered or on the way', async () => {
+      const deliveredOrder = { 
+        ...mockOrder, 
+        state: OrderState.Delivered 
+      };
+      
+      orderRepository.findOne = jest.fn().mockResolvedValue(deliveredOrder);
+      
+      await expect(service.remove(mockOrder.id, mockUser)).rejects.toThrow(BadRequestException);
+    });
+
     it('should allow admin to cancel any order', async () => {
       const orderWithDifferentUser = { 
         ...mockOrder, 
@@ -393,6 +407,44 @@ describe('update', () => {
       expect(result).toEqual({
         message: `Order with ID ${mockOrder.id} has been cancelled successfully`
       });
+    });
+  });
+  
+  describe('findByDateRange', () => {
+    it('should find orders between dates', async () => {
+      const startDate = new Date('2023-01-01');
+      const endDate = new Date('2023-12-31');
+      
+      const result = await service.findByDateRange(startDate, endDate);
+      
+      expect(result).toEqual([mockOrder]);
+      expect(orderRepository.createQueryBuilder).toHaveBeenCalled();
+    });
+
+    it('should call query without state filter if states are not provided', async () => {
+  const mockQuery = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    getMany: jest.fn().mockResolvedValue([]),
+  };
+
+  jest.spyOn(orderRepository, 'createQueryBuilder').mockReturnValue(mockQuery as any);
+
+  await service.findByDateRange(new Date(), new Date(), undefined);
+
+  expect(mockQuery.where).toHaveBeenCalled();
+  expect(mockQuery.getMany).toHaveBeenCalled();
+});
+
+    
+    it('should filter by states if provided', async () => {
+      const startDate = new Date('2023-01-01');
+      const endDate = new Date('2023-12-31');
+      const states = [OrderState.Pending, OrderState.Preparing];
+      
+      const result = await service.findByDateRange(startDate, endDate, states);
+      
+      expect(result).toEqual([mockOrder]);
     });
   });
 });

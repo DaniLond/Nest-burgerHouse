@@ -84,6 +84,18 @@ describe('ProductService', () => {
       expect(result).toEqual(mockProductResponse);
     });
 
+    it('should throw generic BadRequestException for unexpected error', async () => {
+  jest.spyOn(productRepository, 'save').mockRejectedValueOnce({
+    code: '99999',
+    message: 'Some unexpected DB error',
+  });
+
+  await expect(service.create(mockCreateProductDto)).rejects.toThrow(
+    new BadRequestException('Unexpected error, check server logs'),
+  );
+});
+
+
     it('should throw BadRequestException when product creation fails', async () => {
       jest.spyOn(productRepository, 'save').mockRejectedValueOnce({
         code: '23505',
@@ -151,6 +163,21 @@ describe('ProductService', () => {
       });
     });
 
+    it('should throw generic BadRequestException on update failure', async () => {
+  jest.spyOn(productRepository, 'update').mockRejectedValueOnce({
+    code: '99999',
+    message: 'Some unexpected error',
+  });
+
+  
+  jest.spyOn(productRepository, 'findOneBy').mockResolvedValueOnce(mockProduct);
+
+  await expect(
+    service.update(mockProduct.name, mockUpdateProductDto),
+  ).rejects.toThrow(new BadRequestException('Unexpected error, check server logs'));
+});
+
+
     it('should throw NotFoundException if product to update not found', async () => {
       jest.spyOn(productRepository, 'findOneBy').mockResolvedValueOnce(null);
 
@@ -185,4 +212,27 @@ describe('ProductService', () => {
       );
     });
   });
+
+  describe('findOneById', () => {
+  it('should return a product by ID', async () => {
+    const result = await service.findOneById(mockProduct.id);
+
+    expect(productRepository.findOneBy).toHaveBeenCalledWith({
+      id: mockProduct.id,
+      isActive: true,
+    });
+    expect(result).toEqual(mockProduct);
+  });
+
+    it('should throw NotFoundException if product with ID not found', async () => {
+    jest.spyOn(productRepository, 'findOneBy').mockResolvedValueOnce(null);
+
+    await expect(service.findOneById('nonexistent-id')).rejects.toThrow(
+      NotFoundException,
+    );
+  });
 });
+
+
+});
+

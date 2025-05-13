@@ -18,21 +18,6 @@ import { OrderState } from './enums/valid-state.enums';
 
 @Injectable()
 export class OrderService {
-
-async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
-  const query = this.orderRepository.createQueryBuilder('order')
-    .leftJoinAndSelect('order.products', 'products')
-    .where('order.date BETWEEN :startDate AND :endDate', {
-      startDate,
-      endDate,
-    });
-
-  if (states && states.length > 0) {
-    query.andWhere('order.state IN (:...states)', { states });
-  }
-
-  return query.getMany();
-}
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
@@ -40,19 +25,38 @@ async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto, user: User) {
+  async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
+    const query = this.orderRepository.createQueryBuilder('order')
+      .leftJoinAndSelect('order.products', 'products')
+      .where('order.date BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      });
 
-    if ( user.roles.includes(ValidRoles.delivery)) {
-      throw new ForbiddenException('Delivery users cannot create orders')
+    if (states && states.length > 0) {
+      query.andWhere('order.state IN (:...states)', { states });
     }
+
+    return query.getMany();
+  }
+
+  async create(createOrderDto: CreateOrderDto, user: User) {
+    if (user.roles.includes(ValidRoles.delivery)) {
+      throw new ForbiddenException('Delivery users cannot create orders');
+    }
+    
     const { productIds, state = OrderState.Pending, ...orderData } = createOrderDto;
+    
+    // Validation
+    if (!productIds || productIds.length === 0) {
+      throw new BadRequestException('Order must contain at least one product');
+    }
     
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     
     try {
-    
       const products: Product[] = [];
       let calculatedTotal = 0;
       
@@ -144,28 +148,23 @@ async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
+    
     const isAdmin = user.roles.includes(ValidRoles.admin);
     const isDelivery = user.roles.includes(ValidRoles.delivery);
     const isOwner = order.userId === user.id;
     
-    
     if (isDelivery && !isAdmin) {
-      
       if (Object.keys(updateOrderDto).length > 1 || !updateOrderDto.state) {
         throw new ForbiddenException('Delivery users can only update the order state');
       }
     } 
-    
-    else if (isAdmin) {
-      
-    }
     else if (!isAdmin && !isOwner) {
       throw new ForbiddenException('You are not authorized to update this order');
     }
     
     const { productIds, ...updateData } = updateOrderDto;
     
-    
+
     if (!isAdmin && !isDelivery && 
         (updateData.state === OrderState.Delivered || 
          updateData.state === OrderState.OnTheWay)) {
@@ -177,11 +176,12 @@ async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
     await queryRunner.startTransaction();
     
     try {
-   
+      // Update order fields if any
       if (Object.keys(updateData).length > 0) {
         await this.orderRepository.update(id, updateData);
       }
       
+      // Update product relationships if needed
       if (productIds && productIds.length > 0) {
         if (!isAdmin && !isOwner) {
           throw new ForbiddenException('Only the order owner or admin can update products');
@@ -226,8 +226,7 @@ async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
     }
   }
 
- 
-   async remove(id: string, user: User) {
+  async remove(id: string, user: User) {
     const order = await this.orderRepository.findOne({
       where: { id },
       relations: ['user'],
@@ -248,7 +247,7 @@ async findByDateRange(startDate: Date, endDate: Date, states?: OrderState[]) {
       throw new BadRequestException(`Cannot cancel an order that is already ${order.state}`);
     }
     
-    // Set to cancelled state
+
     await this.orderRepository.update(id, { state: OrderState.Cancelled });
     
     return {
