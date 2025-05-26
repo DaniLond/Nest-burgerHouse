@@ -9,8 +9,13 @@ async function bootstrap() {
   app.enableCors({
     origin: 'http://localhost:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
+
+ 
 
   const config = new DocumentBuilder()
     .setTitle('Burger House RESTFul API')
