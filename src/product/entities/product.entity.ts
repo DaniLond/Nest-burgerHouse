@@ -1,7 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { ProductCategories } from "../enums/valid-categories.enum";
-import { ProductTopping } from "../../topping/entities/product-topping.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { ProductCategories } from '../enums/valid-categories.enum';
+import { ProductTopping } from '../../topping/entities/product-topping.entity';
 
 @Entity('products')
 export class Product {
@@ -53,12 +60,23 @@ export class Product {
   })
   category: ProductCategories;
 
+  @ApiProperty({
+    example: 'https://example.com/images/classic-burger.jpg',
+    description: 'Product image URL',
+    required: false,
+  })
+  @Column('text', { nullable: true })
+  imageUrl?: string;
+
   @OneToMany(() => ProductTopping, (productTopping) => productTopping.product)
   productToppings: ProductTopping[];
 
   @BeforeInsert()
   checkFieldsBeforeInsert() {
     this.name = this.name.trim();
+    if (this.imageUrl) {
+      this.imageUrl = this.imageUrl.trim();
+    }
   }
 
   @BeforeUpdate()
