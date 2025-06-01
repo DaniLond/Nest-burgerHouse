@@ -71,4 +71,12 @@ export class Order {
     inverseJoinColumn: { name: 'productId', referencedColumnName: 'id' }
   })
   products: Product[];
+
+  @ApiProperty({
+    example: 'Calle 123 #45-67, Barrio Centro, Santiago de Cali, Valle del Cauca, Colombia',
+    description: 'Delivery address for the order',
+  })
+  @Column({ type: 'text', nullable: true }) 
+  address: string;
+
 }

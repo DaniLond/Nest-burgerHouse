@@ -19,7 +19,8 @@ describe('OrderController', () => {
     fullName: 'Test User',
     roles: ['user'],
     isActive: true,
-  } as User;
+    address: '',
+  } as unknown as User;
 
   const mockAdminUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174999',
@@ -34,6 +35,7 @@ describe('OrderController', () => {
     userId: mockUser.id,
     productIds: ['product-uuid-1', 'product-uuid-2'],
     state: OrderState.Pending,
+    address: 'Ciudad de México, CDMX, México',
   };
 
   const mockUpdateOrderDto: UpdateOrderDto = {
@@ -48,8 +50,11 @@ describe('OrderController', () => {
     products: [
       { id: 'product-uuid-1', title: 'Product 1', price: 20.99 },
       { id: 'product-uuid-2', title: 'Product 2', price: 25.00 },
-    ]
+    ],
+    address:'',
   };
+
+  
 
   beforeEach(async () => {
     mockOrderService = {

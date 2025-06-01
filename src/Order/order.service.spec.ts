@@ -65,13 +65,15 @@ describe('OrderService', () => {
     state: OrderState.Pending,
     user: mockUser,
     products: [mockProduct1, mockProduct2],
+    address: 'Calle 123 #45-67, Barrio Centro, Santiago de Cali, Valle del Cauca, Colombia',
   } as Order;
 
   const mockCreateOrderDto: CreateOrderDto = {
     productIds: [mockProduct1.id, mockProduct2.id],
     state: OrderState.Pending,
     total: mockOrder.total,
-    userId: mockUser.id
+    userId: mockUser.id,
+    address: 'Ciudad pacifico, Cali, Colombia',
   };
 
   const mockUpdateOrderDto: UpdateOrderDto = {

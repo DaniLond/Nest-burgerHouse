@@ -21,7 +21,7 @@ export class OrderService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
-    private readonly productService: ProductService,
+    private readonly productService: ProductService,  
     private readonly dataSource: DataSource,
   ) {}
 
@@ -45,11 +45,15 @@ export class OrderService {
       throw new ForbiddenException('Delivery users cannot create orders');
     }
     
-    const { productIds, state = OrderState.Pending, ...orderData } = createOrderDto;
+    const { productIds, state = OrderState.Pending, address, ...orderData } = createOrderDto;
     
     // Validation
     if (!productIds || productIds.length === 0) {
       throw new BadRequestException('Order must contain at least one product');
+    }
+
+    if (!address || address.trim().length === 0) {
+      throw new BadRequestException('Delivery address is required');
     }
     
     const queryRunner = this.dataSource.createQueryRunner();
@@ -72,6 +76,7 @@ export class OrderService {
         state,
         total: calculatedTotal,
         date: new Date(),
+        address: address.trim(),
       });
       
       const savedOrder = await this.orderRepository.save(order);

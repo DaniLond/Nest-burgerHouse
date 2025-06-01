@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsUUID, IsEnum } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsUUID, IsEnum, IsString, MaxLength } from 'class-validator';
 import { OrderState } from './../enums/valid-state.enums';
 
 export class CreateOrderDto {
@@ -44,4 +44,16 @@ export class CreateOrderDto {
   @IsUUID('all', { each: true })
   @IsNotEmpty()
   productIds: string[];
+
+
+   @ApiProperty({
+    description: 'Delivery address for the order',
+    example: 'Calle 123 #45-67, Barrio Centro, Santiago de Cali, Valle del Cauca, Colombia',
+    maxLength: 500
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(500)
+  address: string;
+
 }

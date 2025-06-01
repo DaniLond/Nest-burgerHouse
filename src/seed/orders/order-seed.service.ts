@@ -71,10 +71,11 @@ export class OrderSeedService {
         
         
         const orderDto: CreateOrderDto = {
-          total: total, 
+          total: total,
           userId: randomUser.id,
           productIds: randomProductIds,
           state: seedOrder.state,
+          address: ''
         };
         
         const result = await this.orderService.create(orderDto, randomUser);
