@@ -166,7 +166,7 @@ export class OrderService {
     return order;
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto, user: User) {
+  async update(id: string) {
     const order = await this.orderRepository.findOne({
       where: { id },
       relations: ['user', 'products'],
@@ -176,83 +176,33 @@ export class OrderService {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
 
-    const isAdmin = user.roles.includes(ValidRoles.admin);
-    const isDelivery = user.roles.includes(ValidRoles.delivery);
-    const isOwner = order.user.id === user.id;
-
-    if (isDelivery && !isAdmin) {
-      if (Object.keys(updateOrderDto).length > 1 || !updateOrderDto.state) {
-        throw new ForbiddenException('Delivery users can only update the order state');
-      }
+    switch (order.state) {
+      case OrderState.Pending:
+        order.state = OrderState.Preparing;
+        break;
+      case OrderState.Preparing:
+        order.state = OrderState.Ready;
+        break;
+      case OrderState.Ready:
+        order.state = OrderState.OnTheWay;
+        break;
+      case OrderState.OnTheWay:
+        order.state = OrderState.Delivered;
+        break;
+      case OrderState.Delivered:
+        // No hacemos nada si ya está entregado
+        break;
+      case OrderState.Cancelled:
+        // Tampoco hacemos nada si está cancelado
+        break;
+      default:
+        break;
     }
-    else if (!isAdmin && !isOwner) {
-      throw new ForbiddenException('You are not authorized to update this order');
-    }
 
-    const { productIds, ...updateData } = updateOrderDto;
+    await this.orderRepository.save(order);
 
-
-    if (!isAdmin && !isDelivery &&
-      (updateData.state === OrderState.Delivered ||
-        updateData.state === OrderState.OnTheWay)) {
-      throw new ForbiddenException('Regular users cannot set order state to Delivered or OnTheWay');
-    }
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // Update order fields if any
-      if (Object.keys(updateData).length > 0) {
-        await this.orderRepository.update(id, updateData);
-      }
-
-      // Update product relationships if needed
-      if (productIds && productIds.length > 0) {
-        if (!isAdmin && !isOwner) {
-          throw new ForbiddenException('Only the order owner or admin can update products');
-        }
-
-        await queryRunner.manager
-          .createQueryBuilder()
-          .delete()
-          .from('order_product')
-          .where('orderId = :orderId', { orderId: id })
-          .execute();
-
-        await queryRunner.manager
-          .createQueryBuilder()
-          .insert()
-          .into('order_product')
-          .values(
-            productIds.map(productId => ({
-              orderId: id,
-              productId
-            }))
-          )
-          .execute();
-
-        let calculatedTotal = 0;
-        for (const productId of productIds) {
-          const product = await this.productService.findOne(productId);
-          calculatedTotal += parseFloat(product.price.toString());
-        }
-
-        await this.orderRepository.update(id, { total: calculatedTotal });
-      }
-
-      await queryRunner.commitTransaction();
-
-      return this.findOne(id, user);
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      this.handleDBExceptions(error);
-    } finally {
-      await queryRunner.release();
-    }
+    return order;
   }
-
   async remove(id: string, user: User) {
     const order = await this.orderRepository.findOne({
       where: { id },
