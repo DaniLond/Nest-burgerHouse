@@ -45,8 +45,7 @@ export class Order {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column()
-  userId: string;
+
 
   @ApiProperty({
     description: 'Current state of the order',

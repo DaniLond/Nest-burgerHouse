@@ -31,7 +31,7 @@ import { OrderState } from './enums/valid-state.enums';
 @ApiTags('Orders')
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
   @Auth()
@@ -77,11 +77,21 @@ export class OrderController {
     description: 'Returns all orders for the current user',
     type: [Order],
   })
-  findByUser(
+  async findByUser(
     @GetUser() user: User,
     @Query() paginationDto: PaginationDto
   ) {
-    return this.orderService.findByUser(user.id, paginationDto);
+    if (
+      user.roles.length === 1 &&
+      user.roles[0] === ValidRoles.customer
+    ) {
+      console.log(await this.orderService.findByUser(user.id, paginationDto));
+      return this.orderService.findByUser(user.id, paginationDto);
+    }
+    console.log(await this.orderService.findAll(paginationDto));
+    return this.orderService.findAll(paginationDto);
+
+
   }
 
   @Get(':id')
@@ -95,7 +105,7 @@ export class OrderController {
     type: Order,
   })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  findOne(@Param('id', ParseUUIDPipe) id: string,  @GetUser() user: User) {
+  findOne(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
     return this.orderService.findOne(id, user);
   }
 
