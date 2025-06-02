@@ -42,8 +42,6 @@ export class OrderService {
   }
 
   async create(createOrderDto: CreateOrderDto, user: User | { id: string }) {
-
-
     const { productIds, state = OrderState.Pending, address, ...orderData } = createOrderDto;
 
     // Validation
