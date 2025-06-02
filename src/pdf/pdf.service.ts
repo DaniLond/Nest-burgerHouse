@@ -24,11 +24,8 @@ export class PdfService {
           // Combinar todos los chunks en un solo buffer
           const pdfBuffer = Buffer.concat(buffers);
           
-          // Convertir a base64
+          // Convertir a base64#
           const base64Pdf = pdfBuffer.toString('base64');
-          
-          // También escribir en disco para verificación
-          this.writePdfToDisk(pdfBuffer, temporarity);
           
           resolve(base64Pdf);
         });
@@ -51,7 +48,7 @@ export class PdfService {
 
   private generatePdfContent(doc: PDFKit.PDFDocument, temporarity: string, data: SalesReport) {
     // Configurar fuentes y colores
-    const primaryColor = '#2563eb';
+    const primaryColor = '#fc6c04';
     const secondaryColor = '#64748b';
     const headerHeight = 80;
 
