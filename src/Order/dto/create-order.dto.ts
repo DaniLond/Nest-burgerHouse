@@ -38,7 +38,7 @@ export class CreateOrderDto {
   productIds: string[];
 
 
-   @ApiProperty({
+  @ApiProperty({
     description: 'Delivery address for the order',
     example: 'Calle 123 #45-67, Barrio Centro, Santiago de Cali, Valle del Cauca, Colombia',
     maxLength: 500
@@ -47,5 +47,19 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @MaxLength(500)
   address: string;
+
+  @IsOptional()
+  toppings?: {
+    productId: string;
+    topping: string;
+    quantity: number;
+    price: number;
+  }[];
+  
+  @IsOptional()
+  items?: {
+    productId: string;
+    quantity: number;
+  }[];
 
 }

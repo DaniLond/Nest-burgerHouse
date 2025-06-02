@@ -45,7 +45,8 @@ export class Order {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-
+  @Column('boolean', { default: false })	
+  isActive: boolean;
 
   @ApiProperty({
     description: 'Current state of the order',
@@ -75,7 +76,21 @@ export class Order {
     example: 'Calle 123 #45-67, Barrio Centro, Santiago de Cali, Valle del Cauca, Colombia',
     description: 'Delivery address for the order',
   })
-  @Column({ type: 'text', nullable: true }) 
+  @Column({ type: 'text', nullable: true })
   address: string;
+
+  @Column({ type: 'jsonb', nullable: true }) // <- aquí lo haces opcional
+  toppings?: {
+    productId: string;
+    topping: string;
+    price: number;
+    quantity: number;
+  }[];
+
+  @Column({ type: 'jsonb', nullable: true }) // <- aquí lo haces opcional
+  items?: {
+    productId: string;
+    quantity: number;
+  }[];
 
 }

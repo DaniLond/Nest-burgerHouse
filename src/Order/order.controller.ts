@@ -51,7 +51,7 @@ export class OrderController {
     if (user.roles.includes(ValidRoles.delivery)) {
       throw new ForbiddenException('Delivery users cannot create orders');
     }
-
+    console.log(createOrderDto);
     return this.orderService.create(createOrderDto, user);
   }
 

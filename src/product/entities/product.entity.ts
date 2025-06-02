@@ -10,6 +10,12 @@ import {
 import { ProductCategories } from '../enums/valid-categories.enum';
 import { ProductTopping } from '../../topping/entities/product-topping.entity';
 
+export interface Topping {
+  topping: string;
+  quantity: number;
+}
+
+
 @Entity('products')
 export class Product {
   @ApiProperty({
@@ -67,6 +73,9 @@ export class Product {
   })
   @Column('text', { nullable: true })
   imageUrl?: string;
+
+  @Column('text', { nullable: true })
+  toppings: ProductTopping[];
 
   @OneToMany(() => ProductTopping, (productTopping) => productTopping.product)
   productToppings: ProductTopping[];

@@ -3,6 +3,13 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Headers, Unauth
 import Stripe from 'stripe';
 import { OrderService } from 'src/Order/order.service';
 
+interface SelectedTopping {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 @Controller('webhook')
 export class WebhookController {
   private stripe: Stripe;
@@ -31,13 +38,9 @@ export class WebhookController {
     }
 
     const bodys = JSON.parse(body);
-    const productIds: string[] = JSON.parse(bodys.data.object.metadata.productIds);
-    const totalStr = bodys.data.object.metadata.total;
-    const total = Number(totalStr);
-    const userId = bodys.data.object.metadata.userId;
-    const address = bodys.data.object.metadata.address;
+    const orderId = bodys.data.object.metadata.orderId;
 
-    this.orderService.create({ productIds, total, address }, { id: userId })
+    this.orderService.activateOrder(orderId);
     return { received: true };
   }
 

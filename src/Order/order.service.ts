@@ -41,24 +41,30 @@ export class OrderService {
     return query.getMany();
   }
 
-  async create(createOrderDto: CreateOrderDto, user: User | { id: string }) {
+  async create(createOrderDto: CreateOrderDto,
+    user: User | { id: string },
+  ) {
     const { productIds, state = OrderState.Pending, address, ...orderData } = createOrderDto;
-
+    console.log("Paso 1");
     // Validation
     if (!productIds || productIds.length === 0) {
       throw new BadRequestException('Order must contain at least one product');
     }
+    console.log("Paso 2");
 
     if (!address || address.trim().length === 0) {
       throw new BadRequestException('Delivery address is required');
     }
+    console.log("Paso 3");
 
     // Eliminar productos duplicados
     const uniqueProductIds = [...new Set(productIds)];
+    console.log("Paso 4");
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    console.log("Paso 5");
 
     try {
       const products: Product[] = [];
@@ -70,6 +76,7 @@ export class OrderService {
         calculatedTotal += parseFloat(product.price.toString());
         products.push(product);
       }
+      console.log("Paso 6");
 
       const order = this.orderRepository.create({
         ...orderData,
@@ -78,9 +85,12 @@ export class OrderService {
         total: calculatedTotal,
         date: new Date(),
         address: address.trim(),
+
       });
+      console.log("Paso 7");
 
       const savedOrder = await this.orderRepository.save(order);
+      console.log("Paso 8");
 
       // Insertar relaciones solo con productos únicos
       await queryRunner.manager
@@ -94,10 +104,12 @@ export class OrderService {
           }))
         )
         .execute();
+      console.log("Paso 9");
 
       await queryRunner.commitTransaction();
+      console.log("Paso 10");
 
-      return this.findOne(savedOrder.id);
+      return this.findOneUnrestricted(savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.handleDBExceptions(error);
@@ -111,8 +123,7 @@ export class OrderService {
 
     // Usamos findAndCount para obtener los registros y el total
     const [orders, total] = await this.orderRepository.findAndCount({
-      take: limit,
-      skip: offset,
+      where: { isActive: true }, // Filtramos por isActive si es necesario
       relations: ['user', 'products'],
       // Opcional: puedes añadir order por fecha descendente
     });
@@ -133,9 +144,7 @@ export class OrderService {
     { limit = 10, offset = 0 }: PaginationDto
   ): Promise<PaginatedResponseDto<Order>> {
     const [orders, total] = await this.orderRepository.findAndCount({
-      where: { user: { id: userId } },
-      take: limit,
-      skip: offset,
+      where: { user: { id: userId }, isActive: true },
       relations: ['products'],
     });
 
@@ -150,7 +159,7 @@ export class OrderService {
     };
   }
 
-  async findOne(id: string, user?: User) {
+  async findOneUnrestricted(id: string, user?: User) {
     const order = await this.orderRepository.findOne({
       where: { id },
       relations: ['user', 'products'],
@@ -168,6 +177,44 @@ export class OrderService {
 
     return order;
   }
+
+
+  async findOne(id: string, user?: User) {
+    const order = await this.orderRepository.findOne({
+      where: { id, isActive: true },
+      relations: ['user', 'products'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    if (user && order.user.id !== user.id &&
+      !user.roles.includes(ValidRoles.admin) &&
+      !user.roles.includes(ValidRoles.delivery)) {
+      throw new ForbiddenException('You are not authorized to view this order');
+    }
+
+    return order;
+  }
+
+  async activateOrder(id: string) {
+  // Primero encontramos la orden sin restricciones
+  const order = await this.findOneUnrestricted(id);
+  
+  if (!order) {
+    throw new NotFoundException(`Order with ID ${id} not found`);
+  }
+
+  // Actualizamos el estado
+  order.isActive = true;
+  
+
+    await this.orderRepository.save(order);
+  
+
+  return order;
+}
 
   async update(id: string) {
     const order = await this.orderRepository.findOne({
@@ -206,6 +253,7 @@ export class OrderService {
 
     return order;
   }
+
   async remove(id: string, user: User) {
     const order = await this.orderRepository.findOne({
       where: { id },

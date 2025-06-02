@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 
+export interface Topping {
+  topping: string;
+  quantity: number;
+}
 
 @Entity('users')
 export class User {

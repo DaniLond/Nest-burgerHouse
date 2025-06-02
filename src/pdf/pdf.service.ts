@@ -8,7 +8,7 @@ import * as path from 'path';
 
 @Injectable()
 export class PdfService {
-  async generateReport(temporarity: string, data: SalesReport): Promise<string> {
+  async generateReport(temporarity: string, data: SalesReport): Promise<{ base64: string }>  {
     return new Promise((resolve, reject) => {
       try {
         // Crear nuevo documento PDF
@@ -27,7 +27,7 @@ export class PdfService {
           // Convertir a base64#
           const base64Pdf = pdfBuffer.toString('base64');
           
-          resolve(base64Pdf);
+          resolve({base64:base64Pdf});
         });
 
         doc.on('error', (err) => {
