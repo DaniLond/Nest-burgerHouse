@@ -72,7 +72,6 @@ export class OrderSeedService {
         
         const orderDto: CreateOrderDto = {
           total: total,
-          userId: randomUser.id,
           productIds: randomProductIds,
           state: seedOrder.state,
           address: ''

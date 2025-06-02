@@ -21,14 +21,6 @@ export class CreateOrderDto {
   date?: Date;
 
   @ApiProperty({
-    description: 'User ID',
-    example: 'cd533345-f1f3-48c9-a62e-7dc2da50c8f8'
-  })
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
-  @ApiProperty({
     description: 'State of the order',
     example: OrderState.Pending,
     enum: OrderState

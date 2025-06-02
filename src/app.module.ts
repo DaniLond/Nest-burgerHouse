@@ -8,6 +8,7 @@ import { CommonsModule } from './commons/commons.module';
 import { ToppingModule } from './topping/topping.module';
 import { OrderModule } from './Order/order.module';
 import { ReportModule } from './report/report.module';
+import { WebhookModule } from './webhook/webhook.module';
 
 
 @Module({
@@ -41,6 +42,7 @@ import { ReportModule } from './report/report.module';
     ToppingModule,
     OrderModule,
     ReportModule,
+    WebhookModule,
   ],
   controllers: [],
   providers: [],

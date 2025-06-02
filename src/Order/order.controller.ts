@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -47,6 +48,10 @@ export class OrderController {
     @Body() createOrderDto: CreateOrderDto,
     @GetUser() user: User,
   ) {
+    if (user.roles.includes(ValidRoles.delivery)) {
+      throw new ForbiddenException('Delivery users cannot create orders');
+    }
+
     return this.orderService.create(createOrderDto, user);
   }
 

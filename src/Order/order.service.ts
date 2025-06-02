@@ -40,10 +40,8 @@ export class OrderService {
     return query.getMany();
   }
 
-  async create(createOrderDto: CreateOrderDto, user: User) {
-    if (user.roles.includes(ValidRoles.delivery)) {
-      throw new ForbiddenException('Delivery users cannot create orders');
-    }
+  async create(createOrderDto: CreateOrderDto, user: User | {id: string}) {
+
     
     const { productIds, state = OrderState.Pending, address, ...orderData } = createOrderDto;
     
