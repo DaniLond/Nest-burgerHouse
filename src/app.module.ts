@@ -9,6 +9,7 @@ import { ToppingModule } from './topping/topping.module';
 import { OrderModule } from './Order/order.module';
 import { ReportModule } from './report/report.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { PdfModule } from './pdf/pdf.module';
 
 
 @Module({
@@ -43,6 +44,7 @@ import { WebhookModule } from './webhook/webhook.module';
     OrderModule,
     ReportModule,
     WebhookModule,
+    PdfModule,
   ],
   controllers: [],
   providers: [],

@@ -59,10 +59,11 @@ export class UserService {
       throw new UnauthorizedException(`Email or password incorrect`);
 
     delete user.password;
-
+    const token = this.getJwtToken({ id: user.id })
+    console.log(token);
     return {
       user: user,
-      token: this.getJwtToken({ id: user.id })
+      token
     };
   }
 

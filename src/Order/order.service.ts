@@ -53,6 +53,9 @@ export class OrderService {
       throw new BadRequestException('Delivery address is required');
     }
 
+    // Eliminar productos duplicados
+    const uniqueProductIds = [...new Set(productIds)];
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -61,7 +64,8 @@ export class OrderService {
       const products: Product[] = [];
       let calculatedTotal = 0;
 
-      for (const productId of productIds) {
+      // Procesar solo los productos únicos
+      for (const productId of uniqueProductIds) {
         const product = await this.productService.findOneById(productId);
         calculatedTotal += parseFloat(product.price.toString());
         products.push(product);
@@ -78,12 +82,13 @@ export class OrderService {
 
       const savedOrder = await this.orderRepository.save(order);
 
+      // Insertar relaciones solo con productos únicos
       await queryRunner.manager
         .createQueryBuilder()
         .insert()
         .into('order_product')
         .values(
-          productIds.map(productId => ({
+          uniqueProductIds.map(productId => ({
             orderId: savedOrder.id,
             productId
           }))
@@ -278,6 +283,32 @@ export class OrderService {
     return {
       message: `Order with ID ${id} has been cancelled successfully`
     };
+  }
+
+
+  async erase(id: string, user: User) {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    const isAdmin = user.roles.includes(ValidRoles.admin) || user.roles.includes(ValidRoles.delivery);
+    const isOwner = order.user.id === user.id;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Only the order owner or admin can cancel this order');
+    }
+
+    if (order.state === OrderState.OnTheWay || order.state === OrderState.Delivered) {
+      throw new BadRequestException(`Cannot cancel an order that is already ${order.state}`);
+    }
+
+
+    await this.orderRepository.remove(order);
   }
 
   private handleDBExceptions(error: any) {

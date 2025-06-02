@@ -110,7 +110,7 @@ export class OrderController {
   }
 
   @Patch(':id')
-  @Auth()
+  @Auth(ValidRoles.admin, ValidRoles.delivery)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update an order' })
   @ApiParam({ name: 'id', description: 'ID of the order to be updated' })
@@ -130,7 +130,7 @@ export class OrderController {
   }
 
   @Delete(':id')
-  @Auth()
+  @Auth(ValidRoles.customer)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cancel an order' })
   @ApiParam({ name: 'id', description: 'ID of the order to cancel' })
@@ -140,6 +140,20 @@ export class OrderController {
   })
   @ApiResponse({ status: 404, description: 'Order not found' })
   remove(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
+    return this.orderService.remove(id, user);
+  }
+
+  @Delete('/admin/:id')
+  @Auth()
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Cancel an order' })
+  @ApiParam({ name: 'id', description: 'ID of the order to cancel' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order has been successfully cancelled',
+  })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  erase(@Param('id', ParseUUIDPipe) id: string, @GetUser() user: User) {
     return this.orderService.remove(id, user);
   }
 }

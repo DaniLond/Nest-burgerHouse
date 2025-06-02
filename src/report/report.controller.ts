@@ -16,6 +16,7 @@ import {
 import { ReportService } from './report.service';
 import { Auth } from '../user/decorators/auth.decorator';
 import { ValidRoles } from '../user/enums/valid-roles.enum';
+import { PdfService } from 'src/pdf/pdf.service';
 
 enum TimeGroupBy {
   day = 'day',
@@ -25,10 +26,12 @@ enum TimeGroupBy {
 
 @ApiTags('Reports')
 @Controller('reports')
-@Auth(ValidRoles.admin) 
+@Auth(ValidRoles.admin)
 @ApiBearerAuth('JWT-auth')
 export class ReportController {
-  constructor(private readonly reportService: ReportService) {}
+  constructor(private readonly reportService: ReportService,
+    private readonly pdfService: PdfService // Assuming you have a PdfModule for PDF generation
+  ) { }
 
   @Get('sales/daily')
   @ApiOperation({ summary: 'Get daily sales report' })
@@ -84,6 +87,7 @@ export class ReportController {
     return this.reportService.getMonthlySalesReport(date);
   }
 
+
   @Get('products/top-selling/daily')
   @ApiOperation({ summary: 'Get daily top selling products' })
   @ApiResponse({
@@ -109,7 +113,9 @@ export class ReportController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
   ) {
     const date = dateString ? new Date(dateString) : new Date();
-    return this.reportService.getDailyTopSellingProducts(date, limit);
+    const report = await this.reportService.getDailyTopSellingProducts(date, limit);
+    console.log(report);
+    return this.pdfService.generateReport("Diario", report);
   }
 
   @Get('products/top-selling/weekly')
@@ -137,7 +143,9 @@ export class ReportController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
   ) {
     const date = dateString ? new Date(dateString) : new Date();
-    return this.reportService.getWeeklyTopSellingProducts(date, limit);
+    const report = await this.reportService.getWeeklyTopSellingProducts(date, limit);
+    console.log(report);
+    return this.pdfService.generateReport("Semanal", report);
   }
 
   @Get('products/top-selling/monthly')
@@ -165,7 +173,10 @@ export class ReportController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
   ) {
     const date = dateString ? new Date(dateString) : new Date();
-    return this.reportService.getMonthlyTopSellingProducts(date, limit);
+    const report = await this.reportService.getMonthlyTopSellingProducts(date, limit);
+    console.log(report);  
+    return this.pdfService.generateReport("Mensual", report);
+
   }
 
   @Get('sales/trends')
@@ -198,7 +209,7 @@ export class ReportController {
   async getSalesTrends(
     @Query('startDate') startDateString: string,
     @Query('endDate') endDateString: string,
-    @Query('groupBy', new ParseEnumPipe(TimeGroupBy, { optional: true })) 
+    @Query('groupBy', new ParseEnumPipe(TimeGroupBy, { optional: true }))
     groupBy?: 'day' | 'week' | 'month',
   ) {
     const startDate = new Date(startDateString);
