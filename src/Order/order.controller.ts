@@ -110,7 +110,7 @@ export class OrderController {
   }
 
   @Patch(':id')
-  @Auth(ValidRoles.admin, ValidRoles.admin)
+  @Auth(ValidRoles.admin, ValidRoles.delivery)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update an order' })
   @ApiParam({ name: 'id', description: 'ID of the order to be updated' })
@@ -128,7 +128,7 @@ export class OrderController {
   }
 
   @Delete(':id')
-  @Auth()
+  @Auth(ValidRoles.customer)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cancel an order' })
   @ApiParam({ name: 'id', description: 'ID of the order to cancel' })
