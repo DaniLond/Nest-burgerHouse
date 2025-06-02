@@ -69,7 +69,7 @@ export class OrderController {
   }
 
   @Get('user')
-  @Auth(ValidRoles.customer, ValidRoles.admin)
+  @Auth(ValidRoles.customer, ValidRoles.admin, ValidRoles.delivery)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get orders by current user' })
   @ApiResponse({
@@ -123,10 +123,8 @@ export class OrderController {
   @ApiResponse({ status: 404, description: 'Order not found' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateOrderDto: UpdateOrderDto,
-    @GetUser() user: User,
   ) {
-    return this.orderService.update(id, updateOrderDto, user);
+    return this.orderService.update(id);
   }
 
   @Delete(':id')
