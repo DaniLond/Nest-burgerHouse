@@ -11,7 +11,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3001',
-      'https://next-burger-house-6fgjwmwqg-danilonds-projects.vercel.app/',
+      'https://next-burger-house-6fgjwmwqg-danilonds-projects.vercel.app',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
